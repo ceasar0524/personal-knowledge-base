@@ -65,6 +65,18 @@ ANTHROPIC_API_KEY=your_anthropic_api_key
 AI_MODEL=claude-haiku-4-5-20251001
 ```
 
+### 模型選用
+
+`AI_MODEL` 支援任何 Anthropic 模型，直接改值即可，不需修改程式碼：
+
+| 模型 | 適用情境 |
+|------|----------|
+| `claude-haiku-4-5-20251001` | 預設，速度快、成本低 |
+| `claude-sonnet-4-6` | 摘要/標籤品質要求較高時 |
+| `claude-opus-4-6` | 最高品質，成本最高 |
+
+> 若想改用非 Anthropic 的模型（OpenAI、Gemini 等），需替換 `sync.py` 中的 SDK 與 API 呼叫格式。
+
 3. 放入 Google Service Account 的 `credentials.json`
 4. 安裝相依套件：
 
