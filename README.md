@@ -75,7 +75,7 @@ AI_MODEL=claude-haiku-4-5-20251001
 | `claude-sonnet-4-6` | 摘要/標籤品質要求較高時 |
 | `claude-opus-4-6` | 最高品質，成本最高 |
 
-> 若想改用非 Anthropic 的模型（OpenAI、Gemini 等），需替換 `sync.py` 中的 SDK 與 API 呼叫格式。
+> 若想改用非 Anthropic 的模型（OpenAI、Gemini 等），需替換 `sync.py` 中的 SDK 與 API 呼叫格式。目前架構已預留此彈性，`AI_MODEL` 為純字串配置，未來可擴充為多 provider 支援。
 
 3. 放入 Google Service Account 的 `credentials.json`
 4. 安裝相依套件：
