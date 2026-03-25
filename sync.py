@@ -336,7 +336,15 @@ def auto_tag_entry(notion: NotionClient, ai: anthropic.Anthropic, entry: dict):
     title = rich_text_to_str(
         props.get("Name", props.get("Title", {})).get("title", [])
     )
-    content = rich_text_to_str(props.get("Text", props.get("Content", {})).get("rich_text", []))
+
+    # 優先從 page blocks（原文）取得內容，fallback 到 Text 摘要
+    try:
+        content = get_page_blocks(notion, entry["id"])
+    except Exception:
+        content = ""
+    if not content:
+        content = rich_text_to_str(props.get("Text", props.get("Content", {})).get("rich_text", []))
+
     tag_list = ", ".join(TAGS)
 
     try:
