@@ -389,7 +389,33 @@ def auto_tag_entry(notion: NotionClient, ai: anthropic.Anthropic, entry: dict):
         log.warning(f"標籤：寫回 Notion 失敗（{title}）：{e}")
 
 
-# ── 自動日期擷取：Claude API 從內容擷取發布日期 → 寫回 Date ───────
+# ── 從 URL 以 regex 嘗試擷取日期 ─────────────────────────────────
+_URL_DATE_PATTERNS = [
+    re.compile(r"/(\d{4})/(\d{2})/(\d{2})"),   # /2025/01/15/
+    re.compile(r"/(\d{4})/(\d{2})/"),            # /2025/01/
+    re.compile(r"[/_-](\d{4})(\d{2})(\d{2})[/_-]"),  # /20250115/
+    re.compile(r"[?&]date=(\d{4}-\d{2}-\d{2})"), # ?date=2025-01-15
+]
+
+def _extract_date_from_url(url: str) -> str:
+    """從 URL 以 regex 嘗試擷取日期，成功回傳 YYYY-MM-DD，否則回傳空字串。"""
+    for pattern in _URL_DATE_PATTERNS:
+        m = pattern.search(url)
+        if not m:
+            continue
+        groups = m.groups()
+        if len(groups) == 1:          # ?date= 格式，已是 YYYY-MM-DD
+            return groups[0]
+        elif len(groups) == 2:        # /YYYY/MM/ 格式，補 01 日
+            year, month = groups
+            return f"{year}-{month}-01"
+        else:                         # /YYYY/MM/DD/ 或 YYYYMMDD 格式
+            year, month, day = groups
+            return f"{year}-{month}-{day}"
+    return ""
+
+
+# ── 自動日期擷取：URL regex → Claude API → 寫回 Date ─────────────
 def auto_extract_date_entry(notion: NotionClient, ai: anthropic.Anthropic, entry: dict):
     props = entry.get("properties", {})
     existing_date = props.get("Date", {}).get("date")
@@ -400,8 +426,23 @@ def auto_extract_date_entry(notion: NotionClient, ai: anthropic.Anthropic, entry
     title = rich_text_to_str(
         props.get("Name", props.get("Title", {})).get("title", [])
     )
+    url = props.get("URL", props.get("Source", {})).get("url") or ""
 
-    # 優先從 page blocks（原文）擷取日期，fallback 到 Text 摘要
+    # Step 1：先嘗試從 URL regex 擷取（免費，零 token）
+    if url:
+        date_from_url = _extract_date_from_url(url)
+        if date_from_url:
+            try:
+                notion.pages.update(
+                    page_id=entry["id"],
+                    properties={"Date": {"date": {"start": date_from_url}}},
+                )
+                log.info(f"日期擷取（URL）：已寫回 Date「{date_from_url}」（{title}）")
+            except Exception as e:
+                log.warning(f"日期擷取（URL）：寫回 Notion 失敗（{title}）：{e}")
+            return
+
+    # Step 2：從 page blocks 或 Text 摘要讀取內容，連同 URL 一起送給 Claude
     try:
         content = get_page_blocks(notion, entry["id"])
     except Exception:
@@ -410,19 +451,21 @@ def auto_extract_date_entry(notion: NotionClient, ai: anthropic.Anthropic, entry
     if not content:
         content = rich_text_to_str(props.get("Text", props.get("Content", {})).get("rich_text", []))
 
-    if not content:
+    if not content and not url:
         return
 
     try:
+        url_hint = f"來源 URL：{url}\n" if url else ""
         resp = ai.messages.create(
             model=AI_MODEL,
             max_tokens=16,
             messages=[{
                 "role": "user",
                 "content": (
-                    f"請從以下文章內容中找出文章的發布日期，只回傳 ISO 8601 格式（YYYY-MM-DD），"
+                    f"請從以下資訊中找出文章的發布日期，只回傳 ISO 8601 格式（YYYY-MM-DD），"
                     f"若找不到發布日期則只回傳「無」，不要其他文字。\n\n"
                     f"標題：{title}\n"
+                    f"{url_hint}"
                     f"內容：{content[:1000]}"
                 ),
             }],
