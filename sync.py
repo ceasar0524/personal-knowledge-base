@@ -425,20 +425,7 @@ def auto_extract_date_entry(notion: NotionClient, ai: anthropic.Anthropic, entry
         return
 
     if raw == "無" or not re.match(r"^\d{4}-\d{2}-\d{2}$", raw):
-        log.info(f"日期擷取：未找到發布日期，標記 No Date（{title}）")
-        existing_tags = entry.get("properties", {}).get("Multi-select", {}).get("multi_select", [])
-        if not any(t["name"] == "No Date" for t in existing_tags):
-            try:
-                notion.pages.update(
-                    page_id=entry["id"],
-                    properties={
-                        "Multi-select": {
-                            "multi_select": existing_tags + [{"name": "No Date"}]
-                        }
-                    },
-                )
-            except Exception as e:
-                log.warning(f"日期擷取：寫回 No Date 標籤失敗（{title}）：{e}")
+        log.info(f"日期擷取：未找到發布日期，跳過（{title}）")
         return
 
     try:

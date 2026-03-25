@@ -23,7 +23,7 @@ The sync script SHALL detect Notion database entries where the Date Added field 
 #### Scenario: No date found in content
 
 - **WHEN** the Claude API cannot identify a publication date in the content
-- **THEN** the script SHALL log the skip, add a `No Date` tag to the entry's Tags field (if not already present), and leave the Date Added field empty, MUST NOT abort the sync
+- **THEN** the script SHALL log the skip and leave the Date Added field empty, MUST NOT abort the sync. Entries without a date can be found in Notion by filtering `Date is empty`
 
 ### Requirement: Date extraction failure resilience
 
