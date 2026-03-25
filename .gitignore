@@ -1,0 +1,7 @@
+.spectra/
+openspec/.vector-search.db*
+.env
+credentials*.json
+sync.log
+__pycache__/
+*.pyc
