@@ -2,6 +2,10 @@
 
 自動將 Notion 知識庫同步至 Google NotebookLM，並透過 Claude AI 自動補全摘要、分類、標籤與發布日期。
 
+## 開發方式
+
+本專案透過 [Claude Code](https://claude.ai/code)（AI 編程助理）與 [Spectra](https://github.com/spectra-ai/spectra)（Spec-Driven Development 工具）協作完成。由人主導需求與決策，AI 協助實作與規格管理。
+
 ## 系統架構
 
 ```
