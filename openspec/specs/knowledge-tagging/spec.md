@@ -13,7 +13,7 @@ The sync script SHALL detect Notion database entries where the Tags field (Multi
 #### Scenario: Entry with no Tags set
 
 - **WHEN** the sync script encounters an entry with an empty Tags field
-- **THEN** it SHALL send the entry's Title and Content to the Claude API, receive 1–3 suggested tags, and update the Notion entry's Tags field via the Notion API
+- **THEN** it SHALL read the entry's page block content first (falling back to the Text summary field if blocks are unavailable), send the Title and content to the Claude API, receive 1–3 suggested tags, and update the Notion entry's Tags field via the Notion API
 
 #### Scenario: Entry already has Tags
 
