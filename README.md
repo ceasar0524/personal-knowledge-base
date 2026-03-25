@@ -72,14 +72,38 @@ AI_MODEL=claude-haiku-4-5-20251001
 pip install notion-client google-api-python-client google-auth anthropic pillow python-dotenv
 ```
 
-## 自動同步設定（cron）
+## 自動同步設定（launchd）
+
+macOS 建議使用 launchd 取代 cron，睡眠喚醒後會補跑錯過的任務。
+
+建立 `~/Library/LaunchAgents/com.knowledgebase.sync.plist`：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.knowledgebase.sync</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/path/to/sync.py</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>21600</integer>
+    <key>StandardOutPath</key>
+    <string>/path/to/sync.log</string>
+    <key>StandardErrorPath</key>
+    <string>/path/to/sync.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
+```
+
+載入：
 
 ```bash
-crontab -e
-```
-
-加入：
-
-```
-0 */6 * * * /usr/bin/python3 /path/to/sync.py >> /path/to/sync.log 2>&1
+launchctl load ~/Library/LaunchAgents/com.knowledgebase.sync.plist
 ```
