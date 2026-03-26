@@ -39,7 +39,7 @@ Google NotebookLM（AI 問答）
 | [Google Drive API](https://developers.google.com/drive) | 上傳 Markdown 至 Google Drive |
 | [Google NotebookLM](https://notebooklm.google.com) | 以 AI 問答方式查詢知識庫 |
 | [Pillow](https://pillow.readthedocs.io) | 圖片壓縮（記憶體處理，不落地儲存） |
-| cron | 每 6 小時自動執行同步 |
+| launchd | 每 6 小時自動執行同步（macOS，睡眠喚醒後補跑錯過的任務） |
 
 ## 自動補全功能
 
